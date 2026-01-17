@@ -3,6 +3,9 @@
 ##
 ## Get latest from `dotnet new gitignore`
 
+# IA folders
+.claude
+
 # dotenv files
 .env
 
