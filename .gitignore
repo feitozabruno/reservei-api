@@ -5,6 +5,7 @@
 
 # IA folders
 .claude
+CLAUDE.md
 
 # dotenv files
 .env

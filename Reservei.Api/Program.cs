@@ -18,6 +18,8 @@ builder.Services.AddIdentityApiEndpoints<User>()
 
 builder.Services.AddOpenApi();
 
+builder.Services.AddControllers();
+
 var app = builder.Build();
 
 app.MapGet("/", () => "Hello World!");
@@ -32,6 +34,8 @@ app.MapHealthChecks("/health");
 
 app.MapIdentityApi<User>()
     .WithTags("Autenticação");
+
+app.MapControllers();
 
 app.Run();
 
