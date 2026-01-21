@@ -1,8 +1,6 @@
-﻿using Microsoft.AspNetCore.Mvc.Testing;
+﻿namespace Reservei.Tests.Integration.Health;
 
-namespace Reservei.Tests.Integration.Health;
-
-public class HealthCheckTests(WebApplicationFactory<Program> factory) : IClassFixture<WebApplicationFactory<Program>>
+public class HealthCheckTests(CustomWebApplicationFactory factory) : IClassFixture<CustomWebApplicationFactory>
 {
     private readonly HttpClient _client = factory.CreateClient();
 

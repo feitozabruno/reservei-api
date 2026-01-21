@@ -1,9 +1,8 @@
 ﻿using System.Net.Http.Json;
-using Microsoft.AspNetCore.Mvc.Testing;
 
 namespace Reservei.Tests.Integration.Auth;
 
-public class AuthTests(WebApplicationFactory<Program> factory) : IClassFixture<WebApplicationFactory<Program>>
+public class AuthTests(CustomWebApplicationFactory factory) : IClassFixture<CustomWebApplicationFactory>
 {
     private readonly HttpClient _client = factory.CreateClient();
 

@@ -1,6 +1,5 @@
 ﻿using System.Net;
 using System.Net.Http.Json;
-using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Reservei.Api.Data;
@@ -8,8 +7,8 @@ using Reservei.Api.DTOs;
 
 namespace Reservei.Tests.Integration.Professionals;
 
-public class ProfessionalsControllerTests(WebApplicationFactory<Program> factory)
-    : IClassFixture<WebApplicationFactory<Program>>
+public class ProfessionalsControllerTests(CustomWebApplicationFactory factory)
+    : IClassFixture<CustomWebApplicationFactory>
 {
     private readonly HttpClient _client = factory.CreateClient();
 
