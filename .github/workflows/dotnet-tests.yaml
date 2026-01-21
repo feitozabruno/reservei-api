@@ -10,21 +10,6 @@ jobs:
   test:
     runs-on: ubuntu-latest
 
-    services:
-      postgres:
-        image: postgres:18.1-alpine3.23
-        env:
-          POSTGRES_USER: test_user
-          POSTGRES_PASSWORD: test_password
-          POSTGRES_DB: test_db
-        ports:
-          - 5432:5432
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -42,5 +27,3 @@ jobs:
 
       - name: Run tests
         run: dotnet test --no-build --configuration Release --verbosity normal
-        env:
-          ConnectionStrings__DefaultConnection: "Host=localhost;Port=5432;Database=test_db;Username=test_user;Password=test_password;Include Error Detail=true"

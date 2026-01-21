@@ -2,10 +2,10 @@
 
 namespace Reservei.Tests.Integration.Auth;
 
-public class AuthTests(CustomWebApplicationFactory factory) : IClassFixture<CustomWebApplicationFactory>
+[Collection("Integration")]
+public class AuthTests(CustomWebApplicationFactory factory)
+    : IntegrationTestBase(factory)
 {
-    private readonly HttpClient _client = factory.CreateClient();
-
     [Fact]
     public async Task Register_And_Login_ShouldReturn_AccessToken()
     {
@@ -16,11 +16,11 @@ public class AuthTests(CustomWebApplicationFactory factory) : IClassFixture<Cust
         var registerRequest = new { email = uniqueEmail, password };
         var loginRequest = new { email = uniqueEmail, password };
 
-        var registerResponse = await _client.PostAsJsonAsync("/register", registerRequest);
+        var registerResponse = await Client.PostAsJsonAsync("/register", registerRequest);
 
         registerResponse.EnsureSuccessStatusCode(); // Garante que deu 200 OK
 
-        var loginResponse = await _client.PostAsJsonAsync("/login", loginRequest);
+        var loginResponse = await Client.PostAsJsonAsync("/login", loginRequest);
 
         loginResponse.EnsureSuccessStatusCode();
 
