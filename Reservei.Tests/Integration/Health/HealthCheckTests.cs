@@ -1,13 +1,13 @@
 ﻿namespace Reservei.Tests.Integration.Health;
 
-public class HealthCheckTests(CustomWebApplicationFactory factory) : IClassFixture<CustomWebApplicationFactory>
+[Collection("Integration")]
+public class HealthCheckTests(CustomWebApplicationFactory factory)
+    : IntegrationTestBase(factory)
 {
-    private readonly HttpClient _client = factory.CreateClient();
-
     [Fact]
     public async Task Get_Health_ReturnsHealthy_And_OkStatus()
     {
-        var response = await _client.GetAsync("/health");
+        var response = await Client.GetAsync("/health");
 
         response.EnsureSuccessStatusCode();
 

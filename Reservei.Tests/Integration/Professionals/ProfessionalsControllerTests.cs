@@ -7,18 +7,17 @@ using Reservei.Api.DTOs;
 
 namespace Reservei.Tests.Integration.Professionals;
 
+[Collection("Integration")]
 public class ProfessionalsControllerTests(CustomWebApplicationFactory factory)
-    : IClassFixture<CustomWebApplicationFactory>
+    : IntegrationTestBase(factory)
 {
-    private readonly HttpClient _client = factory.CreateClient();
-
     private async Task<string> RegisterUserAsync(string email, string password)
     {
         var payload = new { email, password };
-        var response = await _client.PostAsJsonAsync("/register", payload);
+        var response = await Client.PostAsJsonAsync("/register", payload);
         response.EnsureSuccessStatusCode();
 
-        using var scope = factory.Services.CreateScope();
+        using var scope = Factory.Services.CreateScope();
         var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
 
         var user = await dbContext.Users.FirstOrDefaultAsync(u => u.Email == email);
@@ -47,7 +46,7 @@ public class ProfessionalsControllerTests(CustomWebApplicationFactory factory)
         var userId = await RegisterUserAsync(email, "Password123!");
         var payload = CreateValidPayload(userId);
 
-        var response = await _client.PostAsJsonAsync("/api/professionals", payload);
+        var response = await Client.PostAsJsonAsync("/api/professionals", payload);
         var content = await response.Content.ReadFromJsonAsync<ProfessionalResponseDto>();
 
         Assert.Equal(HttpStatusCode.Created, response.StatusCode);
@@ -71,10 +70,10 @@ public class ProfessionalsControllerTests(CustomWebApplicationFactory factory)
         var userId = await RegisterUserAsync(email, "Password123!");
         var payload = CreateValidPayload(userId);
 
-        var initialResponse = await _client.PostAsJsonAsync("/api/professionals", payload);
+        var initialResponse = await Client.PostAsJsonAsync("/api/professionals", payload);
         initialResponse.EnsureSuccessStatusCode();
 
-        var duplicateResponse = await _client.PostAsJsonAsync("/api/professionals", payload);
+        var duplicateResponse = await Client.PostAsJsonAsync("/api/professionals", payload);
         var errorResponse = await duplicateResponse.Content.ReadFromJsonAsync<ErrorResponse>();
 
         Assert.Equal(HttpStatusCode.BadRequest, duplicateResponse.StatusCode);
@@ -88,7 +87,7 @@ public class ProfessionalsControllerTests(CustomWebApplicationFactory factory)
         var nonExistentUserId = Guid.NewGuid().ToString();
         var payload = CreateValidPayload(nonExistentUserId);
 
-        var response = await _client.PostAsJsonAsync("/api/professionals", payload);
+        var response = await Client.PostAsJsonAsync("/api/professionals", payload);
         var errorResponse = await response.Content.ReadFromJsonAsync<ErrorResponse>();
 
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
@@ -103,13 +102,13 @@ public class ProfessionalsControllerTests(CustomWebApplicationFactory factory)
         var userId = await RegisterUserAsync(email, "Password123!");
         var payload = CreateValidPayload(userId);
 
-        var createResponse = await _client.PostAsJsonAsync("/api/professionals", payload);
+        var createResponse = await Client.PostAsJsonAsync("/api/professionals", payload);
         createResponse.EnsureSuccessStatusCode();
 
         var createdProfessional = await createResponse.Content.ReadFromJsonAsync<ProfessionalResponseDto>();
         Assert.NotNull(createdProfessional);
 
-        var response = await _client.GetAsync($"/api/professionals/{createdProfessional.Id}");
+        var response = await Client.GetAsync($"/api/professionals/{createdProfessional.Id}");
         var content = await response.Content.ReadFromJsonAsync<ProfessionalResponseDto>();
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -122,7 +121,7 @@ public class ProfessionalsControllerTests(CustomWebApplicationFactory factory)
     [Fact]
     public async Task GetById_ShouldReturnNotFound_WhenIdDoesNotExist()
     {
-        var response = await _client.GetAsync($"/api/professionals/{Guid.NewGuid().ToString()}");
+        var response = await Client.GetAsync($"/api/professionals/{Guid.NewGuid().ToString()}");
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
     }
 
