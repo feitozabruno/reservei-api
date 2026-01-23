@@ -1,6 +1,6 @@
 namespace Reservei.Tests.Integration;
 
 [CollectionDefinition("Integration")]
-public class IntegrationTestCollection : ICollectionFixture<CustomWebApplicationFactory>
+public class IntegrationTestCollection : ICollectionFixture<AspireIntegrationFactory>
 {
 }

@@ -3,7 +3,7 @@
 namespace Reservei.Tests.Integration.Auth;
 
 [Collection("Integration")]
-public class AuthTests(CustomWebApplicationFactory factory)
+public class AuthTests(AspireIntegrationFactory factory)
     : IntegrationTestBase(factory)
 {
     [Fact]

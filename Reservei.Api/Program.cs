@@ -1,20 +1,17 @@
-using Microsoft.EntityFrameworkCore;
 using Reservei.Api.Data;
 using Reservei.Api.Entities;
+using Reservei.Api.Extensions;
 using Scalar.AspNetCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
-
-builder.Services.AddHealthChecks()
-    .AddDbContextCheck<AppDbContext>();
-
-builder.Services.AddAuthorization();
+builder.AddServiceDefaults();
+builder.AddNpgsqlDbContext<AppDbContext>("sqldb");
 
 builder.Services.AddIdentityApiEndpoints<User>()
     .AddEntityFrameworkStores<AppDbContext>();
+
+builder.Services.AddAuthorization();
 
 builder.Services.AddOpenApi();
 
@@ -26,19 +23,15 @@ app.MapGet("/", () => "Hello World!");
 
 if (app.Environment.IsDevelopment())
 {
+    await app.ApplyMigrationsAsync();
     app.MapOpenApi();
     app.MapScalarApiReference();
 }
 
-app.MapHealthChecks("/health");
-
 app.MapIdentityApi<User>()
     .WithTags("Autenticação");
 
+app.MapDefaultEndpoints();
 app.MapControllers();
 
 app.Run();
-
-public partial class Program
-{
-}
