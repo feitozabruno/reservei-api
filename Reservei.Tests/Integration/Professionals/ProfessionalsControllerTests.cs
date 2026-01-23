@@ -1,14 +1,13 @@
 ﻿using System.Net;
 using System.Net.Http.Json;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
 using Reservei.Api.Data;
 using Reservei.Api.DTOs;
 
 namespace Reservei.Tests.Integration.Professionals;
 
 [Collection("Integration")]
-public class ProfessionalsControllerTests(CustomWebApplicationFactory factory)
+public class ProfessionalsControllerTests(AspireIntegrationFactory factory)
     : IntegrationTestBase(factory)
 {
     private async Task<string> RegisterUserAsync(string email, string password)
@@ -17,8 +16,7 @@ public class ProfessionalsControllerTests(CustomWebApplicationFactory factory)
         var response = await Client.PostAsJsonAsync("/register", payload);
         response.EnsureSuccessStatusCode();
 
-        using var scope = Factory.Services.CreateScope();
-        var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        await using var dbContext = await Factory.GetDbContextAsync<AppDbContext>();
 
         var user = await dbContext.Users.FirstOrDefaultAsync(u => u.Email == email);
         return user!.Id;

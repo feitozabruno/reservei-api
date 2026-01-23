@@ -1,9 +1,9 @@
 namespace Reservei.Tests.Integration;
 
-public abstract class IntegrationTestBase(CustomWebApplicationFactory factory) : IAsyncLifetime
+public abstract class IntegrationTestBase(AspireIntegrationFactory factory) : IAsyncLifetime
 {
-    protected readonly HttpClient Client = factory.CreateClient();
-    protected readonly CustomWebApplicationFactory Factory = factory;
+    protected readonly HttpClient Client = factory.Client;
+    protected readonly AspireIntegrationFactory Factory = factory;
 
     public Task InitializeAsync()
     {
