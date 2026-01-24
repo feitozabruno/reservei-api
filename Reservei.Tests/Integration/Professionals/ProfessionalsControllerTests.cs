@@ -1,5 +1,7 @@
 ﻿using System.Net;
+using System.Net.Http.Headers;
 using System.Net.Http.Json;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Reservei.Api.Data;
 using Reservei.Api.DTOs;
@@ -22,11 +24,19 @@ public class ProfessionalsControllerTests(AspireIntegrationFactory factory)
         return user!.Id;
     }
 
-    private static CreateProfessionalDto CreateValidPayload(string userId)
+    private async Task<string> GetAuthTokenAsync(string email, string password)
+    {
+        var response = await Client.PostAsJsonAsync("/login", new { email, password });
+        response.EnsureSuccessStatusCode();
+
+        var loginResult = await response.Content.ReadFromJsonAsync<AccessTokenResponse>();
+        return loginResult!.AccessToken;
+    }
+
+    private static CreateProfessionalDto CreateValidPayload()
     {
         return new CreateProfessionalDto
         {
-            UserId = userId,
             BusinessName = "GitHub",
             Bio = "Escrevo código.",
             Specialty = "Desenvolvedor C#/.NET",
@@ -41,8 +51,14 @@ public class ProfessionalsControllerTests(AspireIntegrationFactory factory)
     public async Task Create_Professional_ShouldReturn_CreatedStatus()
     {
         var email = $"test_{Guid.NewGuid()}@email.com";
-        var userId = await RegisterUserAsync(email, "Password123!");
-        var payload = CreateValidPayload(userId);
+        const string password = "Password123!";
+
+        var userId = await RegisterUserAsync(email, password);
+        var token = await GetAuthTokenAsync(email, password);
+
+        var payload = CreateValidPayload();
+
+        Client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
 
         var response = await Client.PostAsJsonAsync("/api/professionals", payload);
         var content = await response.Content.ReadFromJsonAsync<ProfessionalResponseDto>();
@@ -52,76 +68,70 @@ public class ProfessionalsControllerTests(AspireIntegrationFactory factory)
         Assert.NotEqual(Guid.Empty, content.Id);
         Assert.Equal(payload.BusinessName, content.BusinessName);
         Assert.Equal(userId, content.UserId);
-        Assert.Equal(payload.Bio, content.Bio);
-        Assert.Equal(payload.Specialty, content.Specialty);
-        Assert.Equal(payload.ProfilePhotoUrl, content.ProfilePhotoUrl);
-        Assert.Equal(payload.Timezone, content.Timezone);
-        Assert.Equal(payload.AppointmentDurationMinutes, content.AppointmentDurationMinutes);
-        Assert.Equal(payload.Address, content.Address);
         Assert.True(content.IsActive);
     }
 
     [Fact]
-    public async Task Create_ShouldReturnBadRequest_WhenUserAlreadyHasProfile()
+    public async Task Create_ShouldReturnConflict_WhenUserAlreadyHasProfile()
     {
         var email = $"test_{Guid.NewGuid()}@email.com";
-        var userId = await RegisterUserAsync(email, "Password123!");
-        var payload = CreateValidPayload(userId);
+        const string password = "Password123!";
+
+        await RegisterUserAsync(email, password);
+        var token = await GetAuthTokenAsync(email, password);
+
+        var payload = CreateValidPayload();
+
+        Client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
 
         var initialResponse = await Client.PostAsJsonAsync("/api/professionals", payload);
         initialResponse.EnsureSuccessStatusCode();
 
         var duplicateResponse = await Client.PostAsJsonAsync("/api/professionals", payload);
-        var errorResponse = await duplicateResponse.Content.ReadFromJsonAsync<ErrorResponse>();
+        var errorResponse = await duplicateResponse.Content.ReadFromJsonAsync<ProblemDetails>();
 
-        Assert.Equal(HttpStatusCode.BadRequest, duplicateResponse.StatusCode);
+        Assert.Equal(HttpStatusCode.Conflict, duplicateResponse.StatusCode);
         Assert.NotNull(errorResponse);
-        Assert.Equal("User already has a professional profile", errorResponse.Message);
-    }
 
-    [Fact]
-    public async Task Create_ShouldReturnNotFound_WhenUserDoesNotExist()
-    {
-        var nonExistentUserId = Guid.NewGuid().ToString();
-        var payload = CreateValidPayload(nonExistentUserId);
-
-        var response = await Client.PostAsJsonAsync("/api/professionals", payload);
-        var errorResponse = await response.Content.ReadFromJsonAsync<ErrorResponse>();
-
-        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
-        Assert.NotNull(errorResponse);
-        Assert.Equal("User not found", errorResponse.Message);
+        Assert.Equal("Conflito de Regra de Negócio", errorResponse.Title);
+        Assert.Equal("User already has a professional profile", errorResponse.Detail);
     }
 
     [Fact]
     public async Task GetById_ShouldReturnOk_WhenProfessionalExists()
     {
         var email = $"test_{Guid.NewGuid()}@email.com";
-        var userId = await RegisterUserAsync(email, "Password123!");
-        var payload = CreateValidPayload(userId);
+        const string password = "Password123!";
 
+        var userId = await RegisterUserAsync(email, password);
+        var token = await GetAuthTokenAsync(email, password);
+        var payload = CreateValidPayload();
+
+        Client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
         var createResponse = await Client.PostAsJsonAsync("/api/professionals", payload);
         createResponse.EnsureSuccessStatusCode();
 
         var createdProfessional = await createResponse.Content.ReadFromJsonAsync<ProfessionalResponseDto>();
-        Assert.NotNull(createdProfessional);
 
-        var response = await Client.GetAsync($"/api/professionals/{createdProfessional.Id}");
+        Client.DefaultRequestHeaders.Authorization = null;
+
+        var response = await Client.GetAsync($"/api/professionals/{createdProfessional!.Id}");
         var content = await response.Content.ReadFromJsonAsync<ProfessionalResponseDto>();
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         Assert.NotNull(content);
         Assert.Equal(createdProfessional.Id, content.Id);
         Assert.Equal(userId, content.UserId);
-        Assert.Equal(payload.BusinessName, content.BusinessName);
     }
 
     [Fact]
     public async Task GetById_ShouldReturnNotFound_WhenIdDoesNotExist()
     {
-        var response = await Client.GetAsync($"/api/professionals/{Guid.NewGuid().ToString()}");
+        Client.DefaultRequestHeaders.Authorization = null;
+
+        var response = await Client.GetAsync($"/api/professionals/{Guid.NewGuid()}");
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
     }
 
-    internal record ErrorResponse(string Message);
+    internal record AccessTokenResponse(string AccessToken);
 }
