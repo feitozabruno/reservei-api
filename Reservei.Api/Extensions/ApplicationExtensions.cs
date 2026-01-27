@@ -1,4 +1,4 @@
-﻿using Reservei.Api.Services;
+﻿using Reservei.Api.Services.Professionals;
 
 namespace Reservei.Api.Extensions;
 

@@ -2,7 +2,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Reservei.Api.DTOs;
-using Reservei.Api.Services;
+using Reservei.Api.Services.Professionals;
 
 namespace Reservei.Api.Controllers;
 

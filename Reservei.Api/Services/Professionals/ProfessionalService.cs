@@ -4,7 +4,7 @@ using Reservei.Api.Data;
 using Reservei.Api.DTOs;
 using Reservei.Api.Entities;
 
-namespace Reservei.Api.Services;
+namespace Reservei.Api.Services.Professionals;
 
 public class ProfessionalService(AppDbContext context, IMapper mapper) : IProfessionalService
 {

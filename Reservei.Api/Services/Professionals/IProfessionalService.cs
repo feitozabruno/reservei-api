@@ -1,6 +1,6 @@
 ﻿using Reservei.Api.DTOs;
 
-namespace Reservei.Api.Services;
+namespace Reservei.Api.Services.Professionals;
 
 public interface IProfessionalService
 {
