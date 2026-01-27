@@ -4,7 +4,6 @@ namespace Reservei.Api.DTOs;
 
 public class CreateProfessionalDto
 {
-    public required string UserId { get; set; }
     [StringLength(100, MinimumLength = 3)] public required string BusinessName { get; set; }
     [StringLength(500)] public string? Bio { get; set; }
     [StringLength(50, MinimumLength = 3)] public required string Specialty { get; set; }
