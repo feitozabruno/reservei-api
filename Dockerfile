@@ -7,7 +7,7 @@ COPY ["Reservei.ServiceDefaults/Reservei.ServiceDefaults.csproj", "Reservei.Serv
 RUN dotnet restore "Reservei.Api/Reservei.Api.csproj"
 
 COPY . .
-WORKDIR "/Reservei.Api"
+WORKDIR /src/Reservei.Api
 RUN dotnet build "Reservei.Api.csproj" -c Release -o /app/build
 
 FROM build AS publish
